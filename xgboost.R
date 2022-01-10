@@ -1,29 +1,4 @@
-args = commandArgs(trailingOnly=TRUE)
-i<-1 
-train_word="--train"
-test_word="--test"
-predict_word="--predict"
-while(i < length(args))
-{
-  if(args[i] == "--train"){
-    train <- args[i+1]
-    i <- i+1
-  }else if(args[i] == "--test"){
-    test <- args[i+1]
-    i<-i+1
-  }else if(args[i]== "--predict"){
-    predict <- args[i+1]
-  }else{
-    if (train_word %in% args==FALSE || test_word %in% args==FALSE 
-        || predict_word %in% args==FALSE || performance_word %in% args==FALSE){
-      stop("Error: missing --train/--test/--predict")
-    }else{
-      stop(paste("Unknown flag", args[i]), call.=FALSE)
-    }
-    
-  }
-  i<-i+1
-}
+
 if(!require(ModelMetrics)) install.packages("ModelMetrics",repos = "http://cran.us.r-project.org")
 if(!require(xgboost)) install.packages("xgboost",repos = "http://cran.us.r-project.org")
 if(!require(lubridate)) install.packages("lubridate",repos = "http://cran.us.r-project.org")
@@ -127,12 +102,124 @@ traindata6 = data6[[1]]
 testdata6 = data6[[2]]
 
 
-d1 = subset(traindata1,select=-c(casual, registered))
-d2 = subset(traindata2,select=-c(casual, registered))
-d6 = subset(traindata6,select=-c(casual, registered))
+traindata1 = subset(traindata1,select=-c(casual, registered))
+traindata2 = subset(traindata2,select=-c(casual, registered))
+traindata6 = subset(traindata6,select=-c(casual, registered))
 
-train = d1
-dtrain = xgb.DMatrix(data = as.matrix(train[,1:8]),
-                     label = train$count)
-dtest = xgb.DMatrix(data = as.matrix(test[,1:8]),
-                    label = test$lpsa)
+
+dtrain1 = xgb.DMatrix(data = as.matrix(traindata1[,-9]),
+                     label = traindata1$count)
+dtest1 = xgb.DMatrix(data = as.matrix(testdata1))
+dtrain2 = xgb.DMatrix(data = as.matrix(traindata2[,-9]),
+                      label = traindata2$count)
+dtest2 = xgb.DMatrix(data = as.matrix(testdata2))
+dtrain6 = xgb.DMatrix(data = as.matrix(traindata6[,-9]),
+                      label = traindata6$count)
+dtest6 = xgb.DMatrix(data = as.matrix(testdata6))
+
+
+xgb.params1 = list(
+  #col的抽樣比例，越高表示每棵樹使用的col越多，會增加每棵小樹的複雜度
+  colsample_bytree = 0.5,                    
+  # row的抽樣比例，越高表示每棵樹使用的col越多，會增加每棵小樹的複雜度
+  subsample = 0.6,                      
+  booster = "gbtree",
+  # 樹的最大深度，越高表示模型可以長得越深，模型複雜度越高
+  max_depth = 4,           
+  # boosting會增加被分錯的資料權重，而此參數是讓權重不會增加的那麼快，因此越大會讓模型愈保守
+  eta = 0.03,
+  # 或用'mae'也可以
+  objective = "reg:squaredlogerror",
+  # 越大，模型會越保守，相對的模型複雜度比較低
+  gamma = 0) 
+
+cv.model1 = xgb.cv(
+  params = xgb.params1, 
+  data = dtrain1,
+  nfold = 5,     # 5-fold cv
+  nrounds=250,   # 測試1-100，各個樹總數下的模型
+  # 如果當nrounds < 30 時，就已經有overfitting情況發生，那表示不用繼續tune下去了，可以提早停止                
+  early_stopping_rounds = 30, 
+  print_every_n = 20 # 每20個單位才顯示一次結果，
+) 
+best.nrounds1 = cv.model1$best_iteration 
+cv.model2 = xgb.cv(
+  params = xgb.params1, 
+  data = dtrain2,
+  nfold = 5,     # 5-fold cv
+  nrounds=250,   # 測試1-100，各個樹總數下的模型
+  # 如果當nrounds < 30 時，就已經有overfitting情況發生，那表示不用繼續tune下去了，可以提早停止                
+  early_stopping_rounds = 30, 
+  print_every_n = 20 # 每20個單位才顯示一次結果，
+) 
+best.nrounds2 = cv.model1$best_iteration 
+cv.model6 = xgb.cv(
+  params = xgb.params1, 
+  data = dtrain6,
+  nfold = 6,     # 5-fold cv
+  nrounds=270,   # 測試1-100，各個樹總數下的模型
+  # 如果當nrounds < 30 時，就已經有overfitting情況發生，那表示不用繼續tune下去了，可以提早停止                
+  early_stopping_rounds = 30, 
+  print_every_n = 20 # 每20個單位才顯示一次結果，
+) 
+best.nrounds6 = cv.model1$best_iteration 
+
+
+xgb.model1 = xgb.train(paras = xgb.params1, 
+                      data = dtrain1,
+                      nrounds = best.nrounds1) 
+xgb.model2 = xgb.train(paras = xgb.params1, 
+                       data = dtrain2,
+                       nrounds = best.nrounds2) 
+xgb.model6 = xgb.train(paras = xgb.params1, 
+                       data = dtrain6,
+                       nrounds = best.nrounds6) 
+xgb_y1 = predict(xgb.model1, dtest1)
+xgb_y2 = predict(xgb.model2, dtest2)
+xgb_y6 = predict(xgb.model6, dtest6)
+
+df1 = data.frame(datetime,count=ifelse(xgb_y1<0,0,xgb_y1))
+df2 = data.frame(datetime,count=ifelse(xgb_y2<0,0,xgb_y2))
+df6 = data.frame(datetime,count=ifelse(xgb_y6<0,0,xgb_y6))
+
+
+writefile <- function(df,output){
+  len_output = length(strsplit(output,"/")[[1]])-1
+  output_split = strsplit(output,"/")[[1]]
+  a = output_split[1]
+  #withpath
+  if (len_output!=0){
+    if (dir.exists(a)==FALSE){
+      dir.create(a)
+      if(len_output>1){
+        for(i in c(2:len_output)){
+          a = paste(a,output_split[i],sep="/")
+          if (dir.exists(a)==FALSE){
+            dir.create(a)
+          }
+        }
+      }
+    }else{
+      #a exist!
+      if(len_output>1){
+        for(i in c(2:len_output)){
+          a = paste(a,output_split[i],sep="/")
+          if (dir.exists(a)==FALSE){
+            dir.create(a)
+          }
+        }
+      }
+    }
+    write.csv(df, file=output,row.names=F,quote=F)
+  }else{ #without path
+    split_csv = strsplit(output,"[.]")[[1]]
+    b = split_csv[length(split_csv)]
+    if (b!="csv"){
+      output = paste0(output,".csv")
+    }
+    write.csv(df, file=output,row.names=F,quote=F)
+  }
+}
+writefile(df1,"performance_xgboostcv1.csv")
+writefile(df2,"performance_xgboostcv2.csv")
+writefile(df6,"performance_xgboostcv6.csv")
