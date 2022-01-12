@@ -11,9 +11,9 @@ Our goal is to forecast bike rental demand in the Capital Bikeshare program in W
 ### Demo 
 You should provide an example commend to reproduce your result
 ```R
-Rscript code/your_script.R --input data/training --output results/performance.tsv
+Rscript code/data_science_final.R
 ```
-* any on-line visualization
+![score](results/final_score.png)
 
 ## Folder organization and its related information
 
@@ -51,4 +51,9 @@ We apply cross-validation to get optimal hyperparameters and then add into train
 ## References
 * Code/implementation which you include/reference (__You should indicate in your presentation if you use code for others. Otherwise, cheating will result in 0 score for final project.__)
 * Packages you use
+  * library(lubridate)
+  * library(randomForest)
+  * library(glmnet)
+  * library(ModelMetrics)
+  * ibrary(xgboost)
 * Related publications
