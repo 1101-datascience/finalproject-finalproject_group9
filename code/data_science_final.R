@@ -51,6 +51,7 @@ train_data <- removeUnnecessaryCols(train_data)
 ## random forest
 runRandomForest <- function(train, test, file_name){
   model <- randomForest(train$count~., data = train, ntree = 1000)
+  varImpPlot(model)
   output <- predict(model,test)
   output <- cbind(time, output)
   colnames(output) <- c("datetime","count")
