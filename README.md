@@ -18,7 +18,7 @@ Rscript code/data_science_final.R
 ## Folder organization and its related information
 
 ### docs
-* Your presentation, 1101_datascience_FP_<yourID|groupName>.ppt/pptx/pdf, by **Jan. 13**
+* Your presentation, 1101_datascience_FP_Group9.ppt, by **Jan. 13**
 * Any related document for the final project
   * papers
   * software user guide
