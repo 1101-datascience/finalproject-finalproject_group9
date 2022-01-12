@@ -4,7 +4,6 @@
 * 王靖文, 105703057
 * 鄭以湉, 106304003
 * 黃大瑋, 107207438
-* ...
 
 ### Goal
 Our goal is to forecast bike rental demand in the Capital Bikeshare program in Washington, D.C. based on different conditions. 
@@ -27,19 +26,20 @@ Rscript code/data_science_final.R
 ### data
 
 * Source
+  * https://www.kaggle.com/c/bike-sharing-demand/data
 * Input format
+  * CSV file
 * Any preprocessing?
-  * Handle missing data
-  * Scale value
+  1. 
 
 ### code
 
 * Which method do you use?
-Lasso, Xgboost, Random Forest
+  * Lasso, Xgboost, Random Forest
 * What is a null model for comparison?
-Our null model is the mean of the count from training data.
+  * Our null model is the mean of the count from training data.
 * How do your perform evaluation? ie. cross-validation, or addtional indepedent data set
-We apply cross-validation to get optimal hyperparameters and then add into training process.
+  * We apply cross-validation to get optimal hyperparameters and then add into training process.
 
 ### results
 
