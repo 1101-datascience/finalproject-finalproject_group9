@@ -30,7 +30,9 @@ Rscript code/data_science_final.R
 * Input format
   * CSV file
 * Any preprocessing?
-  1. 
+  * method1 : convert "datetime" variable into four variables (year, month, day, hour)
+  * method2 : method1 + remove outliers in "count" variable
+  * method3 : method2 + create four groups based on different hour period (from peak period to off-peak period)
 
 ### code
 
