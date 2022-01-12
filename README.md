@@ -13,6 +13,7 @@ You should provide an example commend to reproduce your result
 ```R
 Rscript code/data_science_final.R
 ```
+* any on-line visualization
 ![score](results/final_score.png)
 
 ## Folder organization and its related information
