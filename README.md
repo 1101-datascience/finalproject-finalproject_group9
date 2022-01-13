@@ -13,7 +13,6 @@ You should provide an example commend to reproduce your result
 Rscript code/data_science_final.R
 ```
 * any on-line visualization
-![score](results/final_score.png)
 
 ## Folder organization and its related information
 
@@ -51,6 +50,8 @@ Rscript code/data_science_final.R
   * yes, we create some versions of training data based on different methods of data cleaning, and the testing RMSLE decreases significantly after training the models by using those versions of training data 
 * What is the challenge part of your project?
   * data cleaning
+* Score on Kaggle  
+![score](results/final_score.png)
 ## References
 * Code/implementation which you include/reference (__You should indicate in your presentation if you use code for others. Otherwise, cheating will result in 0 score for final project.__)
 * Packages you use
